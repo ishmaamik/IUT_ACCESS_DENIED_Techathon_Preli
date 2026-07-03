@@ -11,12 +11,12 @@ export const ROOM_LABELS = {
 };
 
 export const ROOM_CENTERS = {
-  drawing: [-4.6, 0, 0],
+  drawing: [-6.2, 0, 0],
   work1: [0, 0, 0],
-  work2: [4.6, 0, 0],
+  work2: [6.2, 0, 0],
 };
 
-export const ROOM_SIZE = { width: 4.2, depth: 3.4 };
+export const ROOM_SIZE = { width: 5.8, depth: 4.6 };
 
 export const ROOM_KIND = {
   drawing: 'lounge',
