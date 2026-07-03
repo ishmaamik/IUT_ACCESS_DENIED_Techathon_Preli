@@ -1,0 +1,274 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b0e14;
+  --panel-bg: #141926;
+  --panel-border: #232b3d;
+  --text: #e7ebf5;
+  --muted: #8792ab;
+  /* Validated dark-surface status steps (fixed, never reused for series identity) */
+  --ok: #0ca30c;
+  --warn: #fab219;
+  --critical: #d03b3b;
+  /* Sequential blue (dark step 400) for magnitude bars; accent mirrors it for the hero figure */
+  --accent: #3987e5;
+  --accent-wash: rgba(57, 135, 229, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--panel-border);
+  background: linear-gradient(180deg, #141926, #0f131d);
+}
+
+.app-header h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.badge {
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.badge.ok {
+  background: rgba(12, 163, 12, 0.16);
+  color: var(--ok);
+}
+
+.badge.down {
+  background: rgba(208, 59, 59, 0.16);
+  color: var(--critical);
+}
+
+.app-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.scene-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.side-panel {
+  width: 340px;
+  flex-shrink: 0;
+  padding: 16px;
+  overflow-y: auto;
+  border-left: 1px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #0d111a;
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.panel h2 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel h3 {
+  font-size: 0.85rem;
+  margin: 12px 0 6px;
+  color: var(--text);
+}
+
+.total-watts {
+  /* Hero figure: the one number this panel leads with. Proportional
+     figures (not tabular-nums) — this is a display value, not a column. */
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.total-watts .unit {
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.kwh-today {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.room-usage {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.room-usage-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.room-usage .watts-value {
+  /* Text stays in a text token even though it reports a value the bar
+     also encodes — the bar carries the data color, the label doesn't. */
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.meter-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--accent-wash);
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 0 4px 4px 0;
+  transition: width 0.6s ease;
+}
+
+.device-list {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.device-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  padding: 3px 0;
+}
+
+.device-list .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #454f66;
+}
+
+.device-list li.on .dot {
+  background: var(--ok);
+  box-shadow: 0 0 8px var(--ok);
+}
+
+.device-list .name {
+  flex: 1;
+  color: var(--text);
+}
+
+.device-list .state {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.device-list li.on .state {
+  color: var(--ok);
+}
+
+.count {
+  background: var(--critical);
+  color: #fff;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.72rem;
+}
+
+.alerts-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.alerts-panel .empty {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.alerts-panel .alert {
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  border-left: 3px solid var(--muted);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.alerts-panel .alert.warning {
+  border-left-color: var(--warn);
+}
+
+.alerts-panel .alert.critical {
+  border-left-color: var(--critical);
+}
+
+.alerts-panel .alert .msg {
+  display: block;
+  color: var(--text);
+}
+
+.alerts-panel .alert .icon {
+  margin-right: 6px;
+}
+
+.alerts-panel .alert .time {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}

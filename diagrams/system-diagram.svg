@@ -1,0 +1,104 @@
+<svg viewBox="0 0 1360 620" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3987e5" />
+    </marker>
+    <marker id="arrowAqua" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#199e70" />
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1360" height="620" fill="#0b0e14" />
+
+  <text x="680" y="34" text-anchor="middle" fill="#e7ebf5" font-size="22" font-weight="700">
+    Office Power Monitor — System Architecture
+  </text>
+  <text x="680" y="55" text-anchor="middle" fill="#8792ab" font-size="12.5">
+    Simulated Device Layer → Backend API → Web Dashboard &amp; Discord Bot → User
+  </text>
+
+  <!-- Box: Simulated Device Layer -->
+  <rect x="40" y="140" width="270" height="180" rx="10" fill="#141926" stroke="#232b3d" stroke-width="1.5" />
+  <text x="175" y="170" text-anchor="middle" fill="#e7ebf5" font-size="15" font-weight="700">Simulated Device Layer</text>
+  <text x="60" y="200" fill="#8792ab" font-size="12" font-family="Consolas, monospace">deviceStore.js</text>
+  <text x="70" y="218" fill="#e7ebf5" font-size="11.5">15 devices (3 rooms × 2 fans + 3 lights)</text>
+  <text x="70" y="234" fill="#e7ebf5" font-size="11.5">single source of truth: status,</text>
+  <text x="70" y="250" fill="#e7ebf5" font-size="11.5">wattage, room, lastChanged</text>
+  <text x="60" y="276" fill="#8792ab" font-size="12" font-family="Consolas, monospace">simulateChanges.js</text>
+  <text x="70" y="294" fill="#e7ebf5" font-size="11.5">ticks every 5s, randomly</text>
+  <text x="70" y="310" fill="#e7ebf5" font-size="11.5">toggles 1–3 devices</text>
+
+  <!-- Box: Backend -->
+  <rect x="420" y="90" width="290" height="280" rx="10" fill="#141926" stroke="#232b3d" stroke-width="1.5" />
+  <text x="565" y="120" text-anchor="middle" fill="#e7ebf5" font-size="15" font-weight="700">Backend (Node.js)</text>
+  <text x="440" y="148" fill="#8792ab" font-size="12" font-family="Consolas, monospace">index.js</text>
+  <text x="450" y="166" fill="#e7ebf5" font-size="11.5">Express REST API</text>
+  <text x="450" y="182" fill="#e7ebf5" font-size="11.5">WebSocket server (/ws)</text>
+  <text x="440" y="208" fill="#8792ab" font-size="12" font-family="Consolas, monospace">alerts.js</text>
+  <text x="450" y="226" fill="#e7ebf5" font-size="11.5">after-hours + &gt;2h-continuous</text>
+  <text x="450" y="242" fill="#e7ebf5" font-size="11.5">alert rules, recomputed every 5s</text>
+  <text x="440" y="268" fill="#8792ab" font-size="12" font-family="Consolas, monospace">energyTracker.js</text>
+  <text x="450" y="286" fill="#e7ebf5" font-size="11.5">integrates watts over time →</text>
+  <text x="450" y="302" fill="#e7ebf5" font-size="11.5">estimated kWh today</text>
+  <text x="565" y="330" text-anchor="middle" fill="#3987e5" font-size="11" font-weight="600">single source of truth for both interfaces</text>
+
+  <!-- Box: Web Dashboard -->
+  <rect x="860" y="90" width="300" height="150" rx="10" fill="#141926" stroke="#232b3d" stroke-width="1.5" />
+  <text x="1010" y="118" text-anchor="middle" fill="#e7ebf5" font-size="15" font-weight="700">Web Dashboard</text>
+  <text x="880" y="144" fill="#e7ebf5" font-size="11.5">React + react-three-fiber</text>
+  <text x="880" y="160" fill="#e7ebf5" font-size="11.5">3D office: rooms, spinning fans,</text>
+  <text x="880" y="176" fill="#e7ebf5" font-size="11.5">glowing lights, alert-pulse floor</text>
+  <text x="880" y="196" fill="#e7ebf5" font-size="11.5">Status / power-meter / alerts panels</text>
+  <text x="880" y="216" fill="#8792ab" font-size="11">updates live — no page refresh</text>
+
+  <!-- Box: Discord Bot -->
+  <rect x="860" y="300" width="300" height="180" rx="10" fill="#141926" stroke="#232b3d" stroke-width="1.5" />
+  <text x="1010" y="328" text-anchor="middle" fill="#e7ebf5" font-size="15" font-weight="700">Discord Bot</text>
+  <text x="880" y="354" fill="#e7ebf5" font-size="11.5">discord.js client</text>
+  <text x="880" y="372" fill="#e7ebf5" font-size="11.5">!status · !room &lt;name&gt; · !usage</text>
+  <text x="880" y="392" fill="#e7ebf5" font-size="11.5">optional LLM polish (Claude) on</text>
+  <text x="880" y="408" fill="#e7ebf5" font-size="11.5">top of real backend facts</text>
+  <text x="880" y="432" fill="#8792ab" font-size="11">polls /api/alerts every 30s →</text>
+  <text x="880" y="448" fill="#8792ab" font-size="11">proactive post to alert channel</text>
+  <text x="880" y="464" fill="#8792ab" font-size="11">(bonus)</text>
+
+  <!-- Box: User -->
+  <rect x="1240" y="180" width="100" height="200" rx="10" fill="#141926" stroke="#232b3d" stroke-width="1.5" />
+  <text x="1290" y="270" text-anchor="middle" fill="#e7ebf5" font-size="14" font-weight="700">User</text>
+  <text x="1290" y="290" text-anchor="middle" fill="#8792ab" font-size="11">(the boss)</text>
+
+  <!-- Arrows -->
+  <path d="M310,230 L420,230" stroke="#3987e5" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+  <text x="365" y="220" text-anchor="middle" fill="#8792ab" font-size="10">device state</text>
+  <text x="365" y="248" text-anchor="middle" fill="#8792ab" font-size="10">changes</text>
+
+  <path d="M710,160 C 770,140 790,130 860,130" stroke="#3987e5" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+  <text x="785" y="105" text-anchor="middle" fill="#3987e5" font-size="10.5" font-weight="600">WebSocket</text>
+  <text x="785" y="118" text-anchor="middle" fill="#8792ab" font-size="9.5">push: snapshot/update/alerts</text>
+
+  <path d="M710,300 C 770,340 790,360 860,370" stroke="#199e70" stroke-width="2" fill="none" marker-end="url(#arrowAqua)" />
+  <text x="785" y="395" text-anchor="middle" fill="#199e70" font-size="10.5" font-weight="600">REST</text>
+  <text x="785" y="408" text-anchor="middle" fill="#8792ab" font-size="9.5">/devices /rooms /usage /alerts</text>
+
+  <path d="M1160,150 C 1200,165 1220,175 1240,220" stroke="#3987e5" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+  <text x="1200" y="145" text-anchor="middle" fill="#8792ab" font-size="10">live view</text>
+
+  <path d="M1160,400 C 1200,390 1220,370 1240,340" stroke="#199e70" stroke-width="2" fill="none" marker-end="url(#arrowAqua)" />
+  <text x="1200" y="424" text-anchor="middle" fill="#8792ab" font-size="10">Discord messages</text>
+
+  <path d="M1240,300 C 1210,315 1185,330 1160,345" stroke="#199e70" stroke-width="2" fill="none" marker-end="url(#arrowAqua)" />
+  <text x="1290" y="318" text-anchor="middle" fill="#8792ab" font-size="10">commands</text>
+
+  <!-- Legend -->
+  <rect x="40" y="500" width="620" height="100" rx="8" fill="#141926" stroke="#232b3d" />
+  <text x="60" y="526" fill="#e7ebf5" font-size="13" font-weight="700">Legend</text>
+  <line x1="60" y1="546" x2="100" y2="546" stroke="#3987e5" stroke-width="2" marker-end="url(#arrow)" />
+  <text x="110" y="550" fill="#e7ebf5" font-size="12">WebSocket — live push, no polling on the dashboard</text>
+  <line x1="60" y1="570" x2="100" y2="570" stroke="#199e70" stroke-width="2" marker-end="url(#arrowAqua)" />
+  <text x="110" y="574" fill="#e7ebf5" font-size="12">REST — one-shot queries (bot commands, initial page load)</text>
+
+  <rect x="700" y="500" width="620" height="100" rx="8" fill="#141926" stroke="#232b3d" />
+  <text x="720" y="526" fill="#e7ebf5" font-size="13" font-weight="700">Architecture rule</text>
+  <text x="720" y="550" fill="#e7ebf5" font-size="12">Both interfaces read the same backend — there is exactly one</text>
+  <text x="720" y="570" fill="#e7ebf5" font-size="12">source of truth (deviceStore.js) for device state.</text>
+</svg>
