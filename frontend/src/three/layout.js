@@ -18,6 +18,11 @@ export const ROOM_CENTERS = {
 
 export const ROOM_SIZE = { width: 5.8, depth: 4.6 };
 
+// Shared with RoomShell's door geometry — kept here so the Walker's path
+// can line up with the actual doorway openings without duplicating numbers.
+export const DOOR_WIDTH = 1.1;
+export const DOOR_Z = ROOM_SIZE.depth / 2 - DOOR_WIDTH / 2 - 0.35;
+
 export const ROOM_KIND = {
   drawing: 'lounge',
   work1: 'work',

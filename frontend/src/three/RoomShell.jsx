@@ -1,9 +1,9 @@
-import { useRef } from 'react';
+import { Suspense, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Text, MeshReflectorMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import { useDeviceStore } from '../store/useDeviceStore';
-import { ROOM_SIZE } from './layout';
+import { ROOM_SIZE, DOOR_WIDTH } from './layout';
 import { WorkFurniture, LoungeFurniture } from './Furniture';
 
 const WALL_HEIGHT = 1.75;
@@ -17,8 +17,7 @@ const WIN_WIDTH = 1.9;
 const WIN_SILL = 0.4;
 const WIN_TOP = 1.4;
 
-// Door geometry, shared by every room's right-hand wall.
-const DOOR_WIDTH = 1.1;
+// Door width comes from layout.js so the Walker's path can share it.
 const DOOR_HEIGHT = 1.5;
 
 function Window({ width, depth }) {
@@ -67,7 +66,11 @@ function Window({ width, depth }) {
   );
 }
 
-function Door({ depth }) {
+// side = 1 for a door on the right wall, -1 on the left — the opening's
+// z-position is kept the same on both sides (not mirrored) so a room's
+// right doorway and its neighbour's left doorway line up across the gap
+// between them, letting the walker cross straight through both.
+function Door({ depth, side = 1 }) {
   const doorZ = depth / 2 - DOOR_WIDTH / 2 - 0.35;
   const frontWidth = depth / 2 - (doorZ + DOOR_WIDTH / 2);
   const backWidth = depth - DOOR_WIDTH - frontWidth;
@@ -99,13 +102,14 @@ function Door({ depth }) {
         <meshStandardMaterial color={TRIM_COLOR} />
       </mesh>
 
-      {/* door leaf, ajar on a hinge at the back edge of the opening */}
-      <group position={[0, 0, doorZ - DOOR_WIDTH / 2]} rotation={[0, -0.55, 0]}>
-        <mesh position={[-0.02, DOOR_HEIGHT / 2, DOOR_WIDTH / 2]} castShadow>
+      {/* door leaf, ajar on a hinge at the back edge of the opening —
+          swings toward whichever side is the room's interior */}
+      <group position={[0, 0, doorZ - DOOR_WIDTH / 2]} rotation={[0, -0.55 * side, 0]}>
+        <mesh position={[-0.02 * side, DOOR_HEIGHT / 2, DOOR_WIDTH / 2]} castShadow>
           <boxGeometry args={[0.045, DOOR_HEIGHT - 0.02, DOOR_WIDTH - 0.03]} />
           <meshStandardMaterial color="#8a5a3a" />
         </mesh>
-        <mesh position={[-0.05, DOOR_HEIGHT / 2, DOOR_WIDTH - 0.12]}>
+        <mesh position={[-0.05 * side, DOOR_HEIGHT / 2, DOOR_WIDTH - 0.12]}>
           <sphereGeometry args={[0.025, 10, 10]} />
           <meshStandardMaterial color="#e8d9a0" metalness={0.6} roughness={0.3} />
         </mesh>
@@ -151,15 +155,15 @@ export default function RoomShell({ room, center, label, kind }) {
       {/* back wall, with a window */}
       <Window width={width} depth={depth} />
 
-      {/* left wall, solid */}
-      <mesh position={[-width / 2, WALL_HEIGHT / 2, 0]}>
-        <boxGeometry args={[0.08, WALL_HEIGHT, depth]} />
-        <meshStandardMaterial color={WALL_COLOR} />
-      </mesh>
+      {/* left wall, with a doorway — lines up with the neighbouring
+          room's right doorway across the gap between rooms */}
+      <group position={[-width / 2, 0, 0]}>
+        <Door depth={depth} side={-1} />
+      </group>
 
       {/* right wall, with a doorway */}
       <group position={[width / 2, 0, 0]}>
-        <Door depth={depth} />
+        <Door depth={depth} side={1} />
       </group>
 
       {/* baseboard trim along the back and left walls */}
@@ -174,15 +178,20 @@ export default function RoomShell({ room, center, label, kind }) {
 
       {kind === 'lounge' ? <LoungeFurniture /> : <WorkFurniture />}
 
-      <Text
-        position={[0, 0.02, depth / 2 - 0.25]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        fontSize={0.28}
-        color="#cdbb90"
-        anchorX="center"
-      >
-        {label}
-      </Text>
+      {/* Text fetches a remote font-resolver on first use; isolated in its
+          own Suspense so a slow/blocked connection only hides the label,
+          never the walls, furniture, fans, or lights around it. */}
+      <Suspense fallback={null}>
+        <Text
+          position={[0, 0.02, depth / 2 - 0.25]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.28}
+          color="#cdbb90"
+          anchorX="center"
+        >
+          {label}
+        </Text>
+      </Suspense>
     </group>
   );
 }

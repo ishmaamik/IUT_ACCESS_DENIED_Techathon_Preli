@@ -7,15 +7,37 @@ import Fan from './Fan';
 import Light from './Light';
 import Outdoors from './Outdoors';
 import { Walker } from './Human';
-import { ROOM_ORDER, ROOM_CENTERS, ROOM_LABELS, ROOM_KIND, ROOM_SIZE, buildDeviceLayout } from './layout';
+import {
+  ROOM_ORDER,
+  ROOM_CENTERS,
+  ROOM_LABELS,
+  ROOM_KIND,
+  ROOM_SIZE,
+  DOOR_Z,
+  buildDeviceLayout,
+} from './layout';
 
 const devicePositions = buildDeviceLayout();
 
-const WALKER_Z = ROOM_SIZE.depth / 2 + 1.1;
-const WALKER_X_RANGE = [
-  ROOM_CENTERS.drawing[0] - ROOM_SIZE.width / 2 + 0.6,
-  ROOM_CENTERS.work2[0] + ROOM_SIZE.width / 2 - 0.6,
-];
+// A path that walks in through one room's doorway, loops around the back
+// of the room (clear of the desks/furniture in the middle), and out the
+// far doorway into the next room — repeated across all three rooms, with
+// a short stretch outside each end. The walker ping-pongs along this same
+// list forever.
+const HALF_WIDTH = ROOM_SIZE.width / 2;
+const BACK_Z = -ROOM_SIZE.depth / 2 + 0.7;
+const WALKER_PATH = ROOM_ORDER.flatMap((room, i) => {
+  const cx = ROOM_CENTERS[room][0];
+  const leftDoorX = cx - HALF_WIDTH + 0.4;
+  const rightDoorX = cx + HALF_WIDTH - 0.4;
+  const points = [
+    [leftDoorX, DOOR_Z], // just inside the left doorway
+    [leftDoorX, BACK_Z], // back-left corner, hugging the side wall
+    [rightDoorX, BACK_Z], // across the back of the room
+    [rightDoorX, DOOR_Z], // just inside the right doorway
+  ];
+  return i === 0 ? [[cx - HALF_WIDTH - 1, DOOR_Z], ...points] : points;
+}).concat([[ROOM_CENTERS[ROOM_ORDER.at(-1)][0] + HALF_WIDTH + 1, DOOR_Z]]);
 
 export default function Scene() {
   // Only need the id set to decide what to render; each Fan/Light
@@ -49,17 +71,20 @@ export default function Scene() {
 
       <Outdoors />
 
+      {ROOM_ORDER.map((room) => (
+        <RoomShell
+          key={room}
+          room={room}
+          center={ROOM_CENTERS[room]}
+          label={ROOM_LABELS[room]}
+          kind={ROOM_KIND[room]}
+        />
+      ))}
+
+      {/* isolated from the rooms: the walker's model load (or a slow font
+          fetch elsewhere) should never be able to blank the other */}
       <Suspense fallback={null}>
-        {ROOM_ORDER.map((room) => (
-          <RoomShell
-            key={room}
-            room={room}
-            center={ROOM_CENTERS[room]}
-            label={ROOM_LABELS[room]}
-            kind={ROOM_KIND[room]}
-          />
-        ))}
-        <Walker xRange={WALKER_X_RANGE} z={WALKER_Z} />
+        <Walker path={WALKER_PATH} />
       </Suspense>
 
       <ContactShadows position={[0, 0.005, 0]} opacity={0.3} scale={22} blur={2} far={2} />
