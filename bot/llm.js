@@ -3,38 +3,38 @@
 // template-based formatter in formatters.js — the bot must never hang or
 // break on this path.
 
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenAI } from '@google/genai';
 
-// Swap to 'claude-haiku-4-5' if you want lower latency/cost for this
-// trivial a rewrite job — either works fine here.
-const MODEL = 'claude-opus-4-8';
+const MODEL = 'gemini-2.5-flash';
 const REQUEST_TIMEOUT_MS = 6000;
 
-const client = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
+const client = process.env.GEMINI_API_KEY
+  ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+  : null;
 
 export async function humanize(factsText) {
   if (!client) return null;
 
   try {
-    const response = await client.messages.create(
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    const response = await client.models.generateContent(
       {
         model: MODEL,
-        max_tokens: 200,
-        output_config: { effort: 'low' },
-        messages: [
-          {
-            role: 'user',
-            content:
-              'Rewrite these office device facts as one short, friendly sentence ' +
-              `for a Discord message. Do not invent numbers not given below.\n\n${factsText}`,
-          },
-        ],
+        contents:
+          'Rewrite these office device facts as one short, friendly sentence ' +
+          `for a Discord message. Do not invent numbers not given below.\n\n${factsText}`,
+        // gemini-2.5-flash spends part of this budget on hidden "thinking"
+        // tokens before the visible reply, so keep this well above the
+        // actual reply length or the response gets cut off mid-sentence.
+        config: { maxOutputTokens: 1024, thinkingConfig: { thinkingBudget: 0 } },
       },
-      { timeout: REQUEST_TIMEOUT_MS }
+      { signal: controller.signal }
     );
 
-    const textBlock = response.content.find((block) => block.type === 'text');
-    return textBlock?.text?.trim() || null;
+    clearTimeout(timer);
+    return response.text?.trim() || null;
   } catch {
     return null;
   }

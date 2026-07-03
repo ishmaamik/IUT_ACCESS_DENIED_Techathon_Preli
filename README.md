@@ -38,7 +38,7 @@ See `diagrams/system-diagram.svg` for the full picture and `hardware/README.md` 
 
 - Node.js 18+ (uses native `fetch`; developed on Node 22)
 - A Discord bot token if you want to run the bot (see [Discord setup](#discord-bot-setup) below)
-- Optionally, an `ANTHROPIC_API_KEY` if you want the bot's replies LLM-polished instead of template-phrased (both are real, non-hardcoded answers either way)
+- Optionally, a `GEMINI_API_KEY` if you want the bot's replies LLM-polished instead of template-phrased (both are real, non-hardcoded answers either way)
 
 ## Running it
 
@@ -81,7 +81,7 @@ npm start
 3. Copy the bot token into `bot/.env` as `DISCORD_TOKEN`.
 4. Invite the bot to your server with the `bot` scope and `Send Messages` + `Read Message History` permissions.
 5. Optional bonus: set `ALERT_CHANNEL_ID` in `bot/.env` to a channel ID — the bot will proactively post there when an alert condition triggers (e.g. a room left on after hours).
-6. Optional: set `ANTHROPIC_API_KEY` in `bot/.env` for LLM-humanized replies. Without it, the bot uses the template phrasing in `bot/formatters.js` — still built from real data, just less conversational.
+6. Optional: set `GEMINI_API_KEY` in `bot/.env` for LLM-humanized replies. Without it, the bot uses the template phrasing in `bot/formatters.js` — still built from real data, just less conversational.
 
 Bot commands: `!status`, `!room <drawing|work1|work2>`, `!usage`, `!help`.
 
