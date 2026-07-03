@@ -3,7 +3,7 @@ import { Client, GatewayIntentBits, Events } from 'discord.js';
 
 import { fetchAllDevices, fetchRoomDevices, fetchUsage, fetchAlerts, resolveRoom } from './officeApi.js';
 import { statusFacts, roomFacts, usageFacts } from './formatters.js';
-import { humanize } from './llm.js';
+import { humanize, chat } from './llm.js';
 
 const ALERT_CHANNEL_ID = process.env.ALERT_CHANNEL_ID;
 const ALERT_POLL_MS = 30000;
@@ -49,8 +49,16 @@ client.on(Events.MessageCreate, async (message) => {
     } else if (command === '!usage') {
       const usage = await fetchUsage();
       await reply(message, usageFacts(usage));
+    } else if (command === '!ask') {
+      const question = args.join(' ');
+      if (!question) {
+        await message.reply('Ask me something, e.g. `!ask why does the drawing room use more power?`');
+        return;
+      }
+      const answer = await chat(question);
+      await message.reply(answer || "Gemini isn't available right now — try again in a moment.");
     } else if (command === '!help') {
-      await message.reply('Commands: `!status`, `!room <drawing|work1|work2>`, `!usage`');
+      await message.reply('Commands: `!status`, `!room <drawing|work1|work2>`, `!usage`, `!ask <question>`');
     }
   } catch (err) {
     console.error(err);

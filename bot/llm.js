@@ -39,3 +39,35 @@ export async function humanize(factsText) {
     return null;
   }
 }
+
+// Free-form chat, unlike humanize() this isn't grounded in office data — it's
+// a general assistant. Returns null (caller shows an error) if there's no
+// key, the call fails, or it's slow.
+export async function chat(question) {
+  if (!client) return null;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    const response = await client.models.generateContent(
+      {
+        model: MODEL,
+        contents: question,
+        config: {
+          maxOutputTokens: 1024,
+          thinkingConfig: { thinkingBudget: 0 },
+          systemInstruction:
+            'You are a helpful assistant chatting inside a Discord server for an ' +
+            'office energy-monitoring project. Keep answers concise and Discord-friendly.',
+        },
+      },
+      { signal: controller.signal }
+    );
+
+    clearTimeout(timer);
+    return response.text?.trim() || null;
+  } catch {
+    return null;
+  }
+}

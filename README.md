@@ -83,7 +83,9 @@ npm start
 5. Optional bonus: set `ALERT_CHANNEL_ID` in `bot/.env` to a channel ID — the bot will proactively post there when an alert condition triggers (e.g. a room left on after hours).
 6. Optional: set `GEMINI_API_KEY` in `bot/.env` for LLM-humanized replies. Without it, the bot uses the template phrasing in `bot/formatters.js` — still built from real data, just less conversational.
 
-Bot commands: `!status`, `!room <drawing|work1|work2>`, `!usage`, `!help`.
+Bot commands: `!status`, `!room <drawing|work1|work2>`, `!usage`, `!ask <question>`, `!help`.
+
+`!ask` is a free-form chat with Gemini (not grounded in office data — general Q&A). Requires `GEMINI_API_KEY` to be set; without it, the bot replies that Gemini isn't available.
 
 ## Deliverables checklist
 
