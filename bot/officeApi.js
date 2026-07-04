@@ -42,3 +42,7 @@ export function fetchUsage() {
 export function fetchAlerts() {
   return getJSON('/alerts');
 }
+
+export function fetchRoomReport(room) {
+  return getJSON(`/rooms/${room}/report`);
+}

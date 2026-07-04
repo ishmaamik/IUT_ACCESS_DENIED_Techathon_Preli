@@ -39,11 +39,15 @@ Device simulator → Backend (REST + WebSocket) → Web dashboard
   from the current state; no state of its own.
 - **`backend/energyTracker.js`** — integrates total wattage over time into
   an estimated kWh-today figure.
+- **`backend/db.js`** — optional MongoDB persistence (device state, hourly
+  kWh rollups, alert history). Entirely best-effort: if `MONGODB_URI` isn't
+  set or the connection fails, every write becomes a no-op and the app
+  keeps running purely in-memory, exactly as before.
 - **Dashboard** connects over WebSocket (`/ws`) and receives push updates —
   no polling.
 - **Bot** reads over REST (`/api/devices`, `/api/rooms/:room`, `/api/usage`,
-  `/api/alerts`), polling `/api/alerts` every 30s to proactively post new
-  alerts to a Discord channel.
+  `/api/alerts`, `/api/rooms/:room/report`), polling `/api/alerts` every 30s
+  to proactively post new alerts to a Discord channel.
 - Announcements made from the dashboard's in-scene phone are posted to
   `/api/announce`, fanned out over the WebSocket, and picked up by the bot
   as an `@everyone` message — the bot is a WebSocket client like the
@@ -62,15 +66,23 @@ walkable avatar (keyboard, joystick, or mouse-click movement), a live power
 meter with per-room breakdown, and an alerts panel. Everything updates over
 the WebSocket connection — there is no polling and no page refresh.
 
+Each room's table has a floating report marker — hover it and click (no
+need to walk the avatar over) to open that room's report: live device
+breakdown, last-24h usage, and month-to-date cost/projection. Walking up to
+the table still works too as an alternate path.
+
 ## Discord bot
 
 *(screenshot: add `diagrams/discord-bot.png` here once captured)*
 
-`bot/` — a discord.js bot that answers `!status`, `!room`, `!usage`, `!ask`,
-and `!help`, reading from the same backend as the dashboard so both
-interfaces always reflect the same reality. Optional Gemini integration
-humanizes replies and proactively posts to a designated channel when an
-alert fires.
+`bot/` — a discord.js bot that answers `!status`, `!room`, `!usage`,
+`!report`, `!ask`, and `!help`, reading from the same backend as the
+dashboard so both interfaces always reflect the same reality. `!report`
+also takes a free-form follow-up question (e.g. `!report work2 how's this
+month looking?`), answered by Gemini grounded strictly in that room's
+report data — it's told to say so rather than guess if the facts don't
+cover the question. Optional Gemini integration humanizes replies and
+proactively posts to a designated channel when an alert fires.
 
 ## Hardware / circuit design
 
@@ -91,9 +103,9 @@ physical hardware is required for this deliverable.
 
 | Path | Contents |
 |---|---|
-| `backend/` | Express REST API + WebSocket server, device simulator, alerts engine, energy tracker |
+| `backend/` | Express REST API + WebSocket server, device simulator, alerts engine, energy tracker, optional MongoDB persistence |
 | `frontend/` | React + react-three-fiber 3D dashboard |
-| `bot/` | Discord bot (`!status`, `!room`, `!usage`, `!ask`), with optional LLM-polished replies |
+| `bot/` | Discord bot (`!status`, `!room`, `!usage`, `!report`, `!ask`), with optional LLM-polished replies |
 | `diagrams/` | System architecture diagram, dashboard screenshot, circuit schematic |
 | `hardware/` | Circuit design — pin mapping, wiring, and simulator build notes for one room |
 
@@ -115,6 +127,11 @@ npm start
 
 Listens on `http://localhost:4000`, WebSocket at `/ws`. Verify with:
 `curl http://localhost:4000/api/usage`
+
+Optional — set `MONGODB_URI` in `backend/.env` to persist device state,
+hourly kWh rollups, and alert history to MongoDB Atlas. Without it (or if
+the connection fails), the backend logs "running without persistence" and
+keeps working entirely in-memory — nothing else depends on it.
 
 ### 2. Frontend
 
@@ -158,6 +175,8 @@ npm start
 | `/api/rooms/:room` | GET | Devices in one room (`drawing`, `work1`, `work2`) |
 | `/api/usage` | GET | Current wattage and estimated kWh today |
 | `/api/alerts` | GET | Active alerts |
+| `/api/energy/history` | GET | Hourly kWh rollups (`?hours=`, `?room=`); `[]` without a database |
+| `/api/rooms/:room/report` | GET | Live state + last-24h kWh + month-to-date cost/projection for one room |
 | `/api/announce` | POST | Broadcasts `{ message }` to all WebSocket clients |
 | `/ws` | WebSocket | Push channel: `snapshot`, `device-update`, `alerts`, `announce` events |
 
@@ -168,6 +187,8 @@ npm start
 | `!status` | Summary of all rooms |
 | `!room <drawing\|work1\|work2>` | Status of one room |
 | `!usage` | Current power draw and estimated kWh today |
+| `!report <room>` | Live state, last-24h kWh, and month-to-date cost/projection for one room |
+| `!report <room> <question>` | Same report data, but asks Gemini your question grounded strictly in it |
 | `!ask <question>` | Free-form question to Gemini (general Q&A, not grounded in office data) |
 | `!help` | Lists commands |
 

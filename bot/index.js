@@ -2,9 +2,16 @@ import 'dotenv/config';
 import { Client, GatewayIntentBits, Events } from 'discord.js';
 import WebSocket from 'ws';
 
-import { fetchAllDevices, fetchRoomDevices, fetchUsage, fetchAlerts, resolveRoom } from './officeApi.js';
-import { statusFacts, roomFacts, usageFacts } from './formatters.js';
-import { humanize, chat } from './llm.js';
+import {
+  fetchAllDevices,
+  fetchRoomDevices,
+  fetchUsage,
+  fetchAlerts,
+  fetchRoomReport,
+  resolveRoom,
+} from './officeApi.js';
+import { statusFacts, roomFacts, usageFacts, reportFacts } from './formatters.js';
+import { humanize, chat, askAboutReport } from './llm.js';
 
 const ALERT_CHANNEL_ID = process.env.ALERT_CHANNEL_ID;
 const ALERT_POLL_MS = 30000;
@@ -55,6 +62,24 @@ client.on(Events.MessageCreate, async (message) => {
     } else if (command === '!usage') {
       const usage = await fetchUsage();
       await reply(message, usageFacts(usage));
+    } else if (command === '!report') {
+      const room = resolveRoom(args[0]);
+      if (!room) {
+        await message.reply(
+          "I don't recognize that room. Try: `!report drawing`, `!report work1`, or `!report work2` — " +
+            'optionally followed by a question, e.g. `!report work2 how does this month look?`'
+        );
+        return;
+      }
+      const question = args.slice(1).join(' ');
+      const report = await fetchRoomReport(room);
+      const facts = reportFacts(report);
+      if (question) {
+        const answer = await askAboutReport(question, facts);
+        await message.reply(answer || `Gemini isn't available right now. Here's the raw report: ${facts}`);
+      } else {
+        await reply(message, facts);
+      }
     } else if (command === '!ask') {
       const question = args.join(' ');
       if (!question) {
@@ -64,7 +89,10 @@ client.on(Events.MessageCreate, async (message) => {
       const answer = await chat(question);
       await message.reply(answer || "Gemini isn't available right now — try again in a moment.");
     } else if (command === '!help') {
-      await message.reply('Commands: `!status`, `!room <drawing|work1|work2>`, `!usage`, `!ask <question>`');
+      await message.reply(
+        'Commands: `!status`, `!room <drawing|work1|work2>`, `!usage`, ' +
+          '`!report <room> [question]`, `!ask <question>`'
+      );
     }
   } catch (err) {
     console.error(err);

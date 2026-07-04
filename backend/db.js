@@ -15,7 +15,14 @@
 //                    few seconds, so we only insert when an alert id newly
 //                    appears, not on every recompute.
 
+import dns from 'node:dns';
 import { MongoClient } from 'mongodb';
+
+// Some networks synthesize a NAT64 IPv6 address for Atlas's hostnames
+// (visible as ENETUNREACH on a 64:ff9b::... address alongside an ETIMEDOUT
+// on the real IPv4 one) and Node tries that broken route first. Preferring
+// IPv4 resolution avoids racing that path.
+dns.setDefaultResultOrder('ipv4first');
 
 const RAW_RETENTION_DAYS = 7;
 

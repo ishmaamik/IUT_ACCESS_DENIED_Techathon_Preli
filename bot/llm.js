@@ -40,6 +40,37 @@ export async function humanize(factsText) {
   }
 }
 
+// Grounded Q&A over a room report: unlike chat() (fully open-ended) or
+// humanize() (rephrase-only, no new claims), this answers a specific
+// question but is instructed to stick to the facts it's given rather than
+// reasoning beyond them.
+export async function askAboutReport(question, factsText) {
+  if (!client) return null;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    const response = await client.models.generateContent(
+      {
+        model: MODEL,
+        contents:
+          `Answer the question using only the facts below — a Discord bot's report on one ` +
+          `office room. Do not invent numbers not given. If the facts don't cover the ` +
+          `question, say so honestly rather than guessing.\n\nFacts:\n${factsText}\n\n` +
+          `Question: ${question}`,
+        config: { maxOutputTokens: 1024, thinkingConfig: { thinkingBudget: 0 } },
+      },
+      { signal: controller.signal }
+    );
+
+    clearTimeout(timer);
+    return response.text?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 // Free-form chat, unlike humanize() this isn't grounded in office data — it's
 // a general assistant. Returns null (caller shows an error) if there's no
 // key, the call fails, or it's slow.

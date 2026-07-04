@@ -31,3 +31,34 @@ export function usageFacts(usage) {
     1
   )} kWh.`;
 }
+
+// Built from GET /api/rooms/:room/report. `hourly` and `month` are empty/null
+// when the backend has no database connection — reported honestly rather
+// than papered over, so the LLM (or the human reading it) knows history
+// isn't tracked right now instead of assuming zero usage.
+export function reportFacts(report) {
+  const { roomLabel, currentWatts, devices, hourly, month } = report;
+  const on = devices.filter((d) => d.status);
+  const deviceLine =
+    on.length === 0
+      ? `all ${devices.length} devices are off`
+      : `${on.length} of ${devices.length} devices on right now (${on.map((d) => d.name).join(', ')})`;
+
+  const lines = [`${roomLabel} report.`, `Currently drawing ${currentWatts}W — ${deviceLine}.`];
+
+  if (hourly.length > 0) {
+    const last24hKwh = hourly.reduce((sum, h) => sum + h.kwh, 0);
+    lines.push(`Last 24h: ${last24hKwh.toFixed(2)} kWh.`);
+  } else {
+    lines.push('No historical data yet — the database is not connected right now.');
+  }
+
+  if (month) {
+    lines.push(
+      `Month-to-date: ${month.kwh} kWh (${month.currency}${month.cost}), ` +
+        `on track for about ${month.projectedKwh} kWh (${month.currency}${month.projectedCost}) by month end.`
+    );
+  }
+
+  return lines.join(' ');
+}
