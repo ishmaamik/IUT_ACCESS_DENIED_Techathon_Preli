@@ -1,3 +1,5 @@
+# This is the official readme for IUT technathon
+
 # Office Power Monitor
 
 *Techathon Preliminary — "Lights, Fans, Discord: The Boss's Big Idea"*
