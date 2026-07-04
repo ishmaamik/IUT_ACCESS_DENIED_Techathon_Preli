@@ -10,6 +10,7 @@ let accumulatedWh = 0;
 let lastSampleAt = Date.now();
 let trackingDay = new Date().toDateString();
 
+// Returns the sample it just took so callers can persist it.
 export function sampleEnergy(now = new Date()) {
   const today = now.toDateString();
   if (today !== trackingDay) {
@@ -18,9 +19,16 @@ export function sampleEnergy(now = new Date()) {
   }
 
   const elapsedHours = (now.getTime() - lastSampleAt) / 3_600_000;
-  const { totalWatts } = getUsage();
-  accumulatedWh += totalWatts * elapsedHours;
+  const { totalWatts, perRoomWatts } = getUsage();
+  const whAdded = totalWatts * elapsedHours;
+  const perRoomWhAdded = {};
+  for (const [room, watts] of Object.entries(perRoomWatts)) {
+    perRoomWhAdded[room] = watts * elapsedHours;
+  }
+  accumulatedWh += whAdded;
   lastSampleAt = now.getTime();
+
+  return { now, totalWatts, perRoomWatts, whAdded, perRoomWhAdded };
 }
 
 export function getEstimatedKwhToday() {

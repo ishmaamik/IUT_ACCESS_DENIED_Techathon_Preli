@@ -11,4 +11,7 @@ export const playerInput = {
   // [x, z] click/tap-to-move destination, or null. Cleared as soon as
   // the keyboard or joystick takes over, or on arrival.
   target: null,
+  // The player's current [x, z], written every frame by Human.jsx so
+  // proximity triggers (ReportSpot) can read it without React state.
+  position: [0, 0],
 };

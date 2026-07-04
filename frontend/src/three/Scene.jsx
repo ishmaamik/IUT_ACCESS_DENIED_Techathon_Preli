@@ -6,6 +6,7 @@ import RoomShell from './RoomShell';
 import Fan from './Fan';
 import Light from './Light';
 import Outdoors from './Outdoors';
+import ReportSpot from './ReportSpot';
 import { Player } from './Human';
 import { playerInput } from './playerInput';
 import {
@@ -15,6 +16,7 @@ import {
   ROOM_KIND,
   ROOM_SIZE,
   DOOR_Z,
+  REPORT_SPOTS,
   buildDeviceLayout,
 } from './layout';
 
@@ -87,6 +89,10 @@ export default function Scene() {
       ))}
 
       <TapToMoveFloor />
+
+      {ROOM_ORDER.map((room) => (
+        <ReportSpot key={`report-${room}`} room={room} position={REPORT_SPOTS[room]} />
+      ))}
 
       {/* isolated from the rooms: the player's model load (or a slow font
           fetch elsewhere) should never be able to blank the other */}
