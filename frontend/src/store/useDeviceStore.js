@@ -14,6 +14,12 @@ export const useDeviceStore = create((set, get) => ({
   connected: false,
   _socket: null,
 
+  // Which room's report modal is open (null = closed). Opened from the
+  // 3D scene's table triggers, closed by the modal itself.
+  reportRoom: null,
+  openReport: (room) => set({ reportRoom: room }),
+  closeReport: () => set({ reportRoom: null }),
+
   connect: () => {
     if (get()._socket) return; // already connecting/connected
 

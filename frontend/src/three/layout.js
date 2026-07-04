@@ -29,6 +29,15 @@ export const ROOM_KIND = {
   work2: 'work',
 };
 
+// Where each room's "walk up to the table for a report" trigger sits —
+// on the work rooms' desk cluster and the lounge's coffee table
+// (positions mirror Furniture.jsx).
+export const REPORT_SPOTS = {
+  drawing: [ROOM_CENTERS.drawing[0] + 0.2, 0, -0.1],
+  work1: [ROOM_CENTERS.work1[0], 0, 0.1],
+  work2: [ROOM_CENTERS.work2[0], 0, 0.1],
+};
+
 const FAN_SLOTS = [
   [-1.2, 0, -1.1],
   [1.2, 0, -1.1],

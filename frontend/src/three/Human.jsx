@@ -87,6 +87,13 @@ export function Player({ start = [0, DOOR_Z] }) {
     return { scale: s, footOffset: -box.min.y * s };
   }, [scene]);
 
+  // Seed the shared position before the first frame so proximity
+  // triggers never read a stale [0, 0].
+  useEffect(() => {
+    playerInput.position[0] = start[0];
+    playerInput.position[1] = start[1];
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     actions?.idle?.reset().fadeIn(CROSSFADE).play();
     return () => {
@@ -217,6 +224,9 @@ export function Player({ start = [0, DOOR_Z] }) {
       // Leg cadence tracks actual speed so the feet don't slide.
       actions?.walk?.setEffectiveTimeScale(THREE.MathUtils.clamp(speed * 1.1, 0.6, 1.8));
     }
+
+    playerInput.position[0] = g.position.x;
+    playerInput.position[1] = g.position.z;
 
     // --- 6. tap-to-move destination marker ------------------------------
     const m = marker.current;

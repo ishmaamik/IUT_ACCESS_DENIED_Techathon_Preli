@@ -4,6 +4,7 @@ import TopBar from './components/TopBar';
 import { AlertToasts } from './components/NotificationBell';
 import Joystick from './components/Joystick';
 import Phone from './components/Phone';
+import RoomReport from './components/RoomReport';
 import { useDeviceStore } from './store/useDeviceStore';
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
           <AlertToasts />
           <Joystick />
           <Phone />
+          <RoomReport />
         </div>
       </div>
     </div>
