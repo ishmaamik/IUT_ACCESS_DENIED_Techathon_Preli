@@ -24,6 +24,27 @@ function shortLabel(device) {
   return `${device.type === 'fan' ? 'F' : 'L'}${num}`;
 }
 
+// Live time + date on the right, so the bar always answers "as of when".
+function Clock() {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="header-clock">
+      <div className="header-clock-time">
+        {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+      </div>
+      <div className="header-clock-date">
+        {now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+      </div>
+    </div>
+  );
+}
+
 // Collapsed, a room chip already shows every device's on/off state as a
 // row of small tags — no click required for the basic picture. Click it
 // to drop down the full names alongside their state, for when a tag's
@@ -49,6 +70,7 @@ function RoomChip({ room }) {
 
   const watts = usage.perRoomWatts?.[room] ?? 0;
   const pct = Math.min(100, (watts / ROOM_MAX_WATTS) * 100);
+  const onCount = devices.filter((d) => d.status).length;
 
   return (
     <div className={`room-chip ${open ? 'open' : ''}`} ref={wrapRef}>
@@ -64,6 +86,7 @@ function RoomChip({ room }) {
               {shortLabel(device)}
             </span>
           ))}
+          <span className="room-chip-oncount">{onCount}/{devices.length} on</span>
         </span>
         <span className="meter-track">
           <span className="meter-fill" style={{ width: `${pct}%` }} />
@@ -114,6 +137,7 @@ export default function TopBar() {
         ))}
       </div>
 
+      <Clock />
       <NotificationBell />
     </header>
   );
