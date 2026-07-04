@@ -73,7 +73,10 @@ the table still works too as an alternate path.
 
 ## Discord bot
 
-*(screenshot: add `diagrams/discord-bot.png` here once captured)*
+<p align="center">
+  <img src="diagrams/discord-bot.png" width="720" alt="Discord bot in use"><br>
+  <sub>Discord bot — commands answered from live backend data</sub>
+</p>
 
 `bot/` — a discord.js bot that answers `!status`, `!room`, `!usage`,
 `!report`, `!ask`, and `!help`, reading from the same backend as the
