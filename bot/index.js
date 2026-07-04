@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { Client, GatewayIntentBits, Events } from 'discord.js';
+import WebSocket from 'ws';
 
 import { fetchAllDevices, fetchRoomDevices, fetchUsage, fetchAlerts, resolveRoom } from './officeApi.js';
 import { statusFacts, roomFacts, usageFacts } from './formatters.js';
@@ -7,6 +8,8 @@ import { humanize, chat } from './llm.js';
 
 const ALERT_CHANNEL_ID = process.env.ALERT_CHANNEL_ID;
 const ALERT_POLL_MS = 30000;
+const BACKEND_WS_URL = process.env.BACKEND_WS_URL || 'ws://localhost:4000/ws';
+const WS_RECONNECT_MS = 3000;
 
 const ROOM_LABELS = {
   drawing: 'Drawing Room',
@@ -27,7 +30,10 @@ async function reply(message, facts) {
 
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`Bot logged in as ${readyClient.user.tag}`);
-  if (ALERT_CHANNEL_ID) startAlertWatcher(readyClient);
+  if (ALERT_CHANNEL_ID) {
+    startAlertWatcher(readyClient);
+    startAnnouncementListener(readyClient);
+  }
 });
 
 client.on(Events.MessageCreate, async (message) => {
@@ -92,6 +98,34 @@ function startAlertWatcher(readyClient) {
       console.error('Alert watcher error:', err);
     }
   }, ALERT_POLL_MS);
+}
+
+// The dashboard's in-game phone posts announcements to the backend, which
+// fans them out over its WebSocket. The bot sits on that socket like any
+// dashboard client and relays them to the channel as @everyone pings,
+// reconnecting quietly whenever the backend restarts.
+function startAnnouncementListener(readyClient) {
+  const connect = () => {
+    const ws = new WebSocket(BACKEND_WS_URL);
+
+    ws.on('message', async (data) => {
+      try {
+        const msg = JSON.parse(data);
+        if (msg.type !== 'announce') return;
+        const channel = await readyClient.channels.fetch(ALERT_CHANNEL_ID);
+        await channel.send({
+          content: `@everyone 📢 **Office announcement:** ${msg.message}`,
+          allowedMentions: { parse: ['everyone'] },
+        });
+      } catch (err) {
+        console.error('Announcement relay error:', err);
+      }
+    });
+
+    ws.on('close', () => setTimeout(connect, WS_RECONNECT_MS));
+    ws.on('error', () => {}); // 'close' always follows; reconnect happens there
+  };
+  connect();
 }
 
 client.login(process.env.DISCORD_TOKEN);

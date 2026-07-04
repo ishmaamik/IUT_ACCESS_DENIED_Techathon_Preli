@@ -47,6 +47,23 @@ app.get('/api/alerts', (req, res) => {
   res.json(computeAlerts());
 });
 
+// The dashboard's in-game phone posts here; the message is fanned out
+// over the WebSocket, where the Discord bot (a WS client like any
+// dashboard) picks it up and @everyone-announces it in the channel.
+app.post('/api/announce', (req, res) => {
+  const message = (req.body?.message ?? '').toString().trim();
+  if (!message) {
+    res.status(400).json({ error: 'Message is required' });
+    return;
+  }
+  if (message.length > 500) {
+    res.status(400).json({ error: 'Message too long (max 500 characters)' });
+    return;
+  }
+  broadcast({ type: 'announce', message, timestamp: Date.now() });
+  res.json({ ok: true });
+});
+
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
 

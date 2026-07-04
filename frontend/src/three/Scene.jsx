@@ -48,28 +48,30 @@ export default function Scene() {
   const deviceIds = useDeviceStore((state) => Object.keys(state.devices));
 
   return (
-    <Canvas shadows camera={{ position: [0, 16, 17], fov: 42 }}>
-      <color attach="background" args={['#f3e6c8']} />
-      <fog attach="fog" args={['#f3e6c8', 26, 58]} />
+    <Canvas shadows camera={{ position: [0, 8.5, 12.5], fov: 42 }}>
+      {/* cool urban haze — matches the paved plaza and glass towers */}
+      <color attach="background" args={['#dbe3ea']} />
+      <fog attach="fog" args={['#dbe3ea', 26, 58]} />
 
       <Sky sunPosition={[10, 6, 8]} turbidity={4} rayleigh={1.2} mieCoefficient={0.01} mieDirectionalG={0.9} />
 
-      <ambientLight intensity={0.55} color="#fff3dd" />
+      <ambientLight intensity={0.55} color="#f2f6fb" />
       <directionalLight
         position={[6, 10, 4]}
         intensity={0.9}
-        color="#fff2d6"
+        color="#fff6e6"
         castShadow
         shadow-mapSize={[2048, 2048]}
       />
-      <hemisphereLight args={['#fff3dd', '#cdbb8c', 0.4]} />
+      <hemisphereLight args={['#e8f0f7', '#9aa5b0', 0.4]} />
 
       <OrbitControls
         enablePan={false}
+        target={[0, 0.7, 0]}
         minPolarAngle={Math.PI / 4.5}
         maxPolarAngle={Math.PI / 2.3}
-        minDistance={14}
-        maxDistance={32}
+        minDistance={7}
+        maxDistance={30}
       />
 
       <Outdoors />

@@ -3,6 +3,7 @@ import Scene from './three/Scene';
 import TopBar from './components/TopBar';
 import { AlertToasts } from './components/NotificationBell';
 import Joystick from './components/Joystick';
+import Phone from './components/Phone';
 import { useDeviceStore } from './store/useDeviceStore';
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
           <Scene />
           <AlertToasts />
           <Joystick />
+          <Phone />
         </div>
       </div>
     </div>
