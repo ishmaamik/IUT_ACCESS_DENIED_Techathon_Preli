@@ -13,6 +13,18 @@
   /* Warm amber accent for magnitude bars; mirrors the hero figure */
   --accent: #c1793a;
   --accent-wash: rgba(193, 121, 58, 0.14);
+  /* Clearly green top bar — ties it to the outdoor grass ring in the 3D
+     scene instead of blending into the cream body. */
+  --header-bg-top: #cfe0ab;
+  --header-bg-bottom: #a9c97e;
+  --header-border: #8fb166;
+  --header-text: #2c3d1a;
+  /* Cards that sit directly on the green bar get a green-tinted surface
+     instead of stark white, so they read as part of the bar, not cutouts
+     pasted on top of it. */
+  --chip-bg: #eef4e2;
+  --chip-bg-hover: #f5f9ec;
+  --chip-border: #cddba3;
 }
 
 * {
@@ -36,27 +48,60 @@ body {
   height: 100vh;
 }
 
+/* One unified top bar: brand+status, the power hero, a row of per-room
+   drop-downs, and notifications — everything that used to be spread
+   across a header, a stats strip, and a right-hand column. */
 .app-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 24px;
   padding: 14px 24px;
-  border-bottom: 1px solid var(--panel-border);
-  background: linear-gradient(180deg, #fffaf0, #f3ead9);
+  border-bottom: 1px solid var(--header-border);
+  background: linear-gradient(180deg, var(--header-bg-top), var(--header-bg-bottom));
+  flex-shrink: 0;
+  position: relative;
+  z-index: 30;
 }
 
-.app-header h1 {
+.app-header-brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-width: 190px;
+  padding-right: 24px;
+  border-right: 1px solid var(--header-border);
+}
+
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.app-header-brand h1 {
   font-family: 'Poppins', 'Inter', sans-serif;
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.35rem;
+  font-weight: 700;
   margin: 0;
   letter-spacing: 0.01em;
-  color: #4a3d2a;
+  color: var(--header-text);
+  white-space: nowrap;
 }
 
 .badge {
-  font-size: 0.78rem;
-  padding: 4px 12px;
+  align-self: flex-start;
+  font-size: 0.72rem;
+  padding: 3px 10px;
   border-radius: 999px;
   font-weight: 600;
 }
@@ -71,6 +116,208 @@ body {
   color: var(--critical);
 }
 
+.app-header-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-right: 24px;
+  border-right: 1px solid var(--header-border);
+  flex-shrink: 0;
+}
+
+.app-header-hero .total-watts {
+  font-size: 1.9rem;
+}
+
+.room-chip-row {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Collapsed: name, watts, fan/light icons, a thin usage bar — stretched
+   to fill the bar rather than sitting as a narrow island in a wide row.
+   Click to drop the full per-device list down below it. */
+.room-chip {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.room-chip-summary {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.room-chip-summary:hover,
+.room-chip.open .room-chip-summary {
+  background: var(--chip-bg-hover);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(193, 121, 58, 0.12);
+}
+
+.room-chip-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.room-chip-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: auto;
+}
+
+.room-chip-top .watts-value {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.room-chip-chevron {
+  color: var(--muted);
+  font-size: 0.7rem;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.room-chip.open .room-chip-chevron {
+  transform: rotate(180deg);
+}
+
+/* Every device's on/off state, always visible — no click needed for the
+   basic picture, only for the full names. */
+.room-chip-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.device-tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--accent-wash);
+  color: var(--muted);
+  letter-spacing: 0.01em;
+}
+
+.device-tag.on {
+  background: rgba(58, 143, 74, 0.16);
+  color: var(--ok);
+}
+
+.room-chip-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 220px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 24px rgba(89, 68, 32, 0.16);
+  z-index: 25;
+}
+
+/* Notifications: closed by default — a bell + badge, opened on click. */
+.notif-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.notif-bell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--header-text);
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.notif-bell:hover {
+  background: var(--chip-bg-hover);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(193, 121, 58, 0.12);
+}
+
+.notif-bell .count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--critical);
+  color: #fff;
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 24px rgba(89, 68, 32, 0.16);
+  z-index: 35;
+}
+
+.notif-dropdown h2 {
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+.notif-dropdown .empty {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.notif-dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .app-body {
   flex: 1;
   display: flex;
@@ -80,115 +327,108 @@ body {
 .scene-wrap {
   flex: 1;
   min-width: 0;
+  position: relative;
 }
 
-.side-panel {
-  width: 350px;
-  flex-shrink: 0;
-  padding: 18px;
-  overflow-y: auto;
-  border-left: 1px solid var(--panel-border);
+/* Transient toasts for newly-appeared alerts, stacked top-right over the
+   scene — a "just happened" signal, separate from the bell's persistent
+   list of what's currently active. */
+.toast-stack {
+  position: absolute;
+  top: 16px;
+  right: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  background: var(--bg-soft);
+  gap: 10px;
+  z-index: 10;
+  max-width: 320px;
 }
 
-.panel {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: 14px;
-  padding: 16px 18px;
-  box-shadow: 0 2px 10px rgba(89, 68, 32, 0.06);
-}
-
-.panel h2 {
-  font-family: 'Poppins', 'Inter', sans-serif;
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  margin: 0 0 12px;
+.toast {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
+  background: rgba(255, 250, 240, 0.95);
+  backdrop-filter: blur(6px);
+  border-left: 3px solid var(--muted);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  color: var(--text);
+  box-shadow: 0 8px 20px rgba(89, 68, 32, 0.14);
+  animation: toast-in 0.25s ease;
 }
 
-.panel h3 {
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin: 14px 0 6px;
-  color: var(--text);
+.toast.warning {
+  border-left-color: var(--warn);
+}
+
+.toast.critical {
+  border-left-color: var(--critical);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .total-watts {
   /* Hero figure: the one number this panel leads with. Proportional
      figures (not tabular-nums) — this is a display value, not a column. */
   font-family: 'Poppins', 'Inter', sans-serif;
-  font-size: 3rem;
   font-weight: 700;
   color: var(--accent);
   line-height: 1;
 }
 
 .total-watts .unit {
-  font-size: 1.1rem;
+  font-size: 0.7em;
   color: var(--muted);
   margin-left: 4px;
   font-weight: 600;
 }
 
 .kwh-today {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   color: var(--muted);
-  margin-top: 8px;
+  margin-top: 4px;
+  white-space: nowrap;
 }
 
-.room-usage {
-  list-style: none;
-  margin: 18px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.room-usage-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.82rem;
-  color: var(--text);
-  margin-bottom: 4px;
-}
-
-.room-usage .watts-value {
-  /* Text stays in a text token even though it reports a value the bar
-     also encodes — the bar carries the data color, the label doesn't. */
-  color: var(--muted);
+.watts-value {
   font-variant-numeric: tabular-nums;
 }
 
 .meter-track {
-  height: 8px;
-  border-radius: 4px;
+  display: block;
+  height: 6px;
+  border-radius: 3px;
   background: var(--accent-wash);
   overflow: hidden;
 }
 
 .meter-fill {
+  display: block;
   height: 100%;
   background: var(--accent);
-  border-radius: 0 4px 4px 0;
+  border-radius: 0 3px 3px 0;
   transition: width 0.6s ease;
 }
 
 .device-list {
   list-style: none;
-  margin: 0 0 4px;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 190px;
 }
 
 .device-list li {
@@ -226,30 +466,7 @@ body {
   color: var(--ok);
 }
 
-.count {
-  background: var(--critical);
-  color: #fff;
-  border-radius: 999px;
-  padding: 1px 8px;
-  font-size: 0.72rem;
-}
-
-.alerts-panel ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.alerts-panel .empty {
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin: 0;
-}
-
-.alerts-panel .alert {
+.notif-dropdown .alert {
   border-radius: 8px;
   padding: 9px 11px;
   font-size: 0.82rem;
@@ -257,24 +474,24 @@ body {
   background: rgba(193, 121, 58, 0.06);
 }
 
-.alerts-panel .alert.warning {
+.notif-dropdown .alert.warning {
   border-left-color: var(--warn);
 }
 
-.alerts-panel .alert.critical {
+.notif-dropdown .alert.critical {
   border-left-color: var(--critical);
 }
 
-.alerts-panel .alert .msg {
+.notif-dropdown .alert .msg {
   display: block;
   color: var(--text);
 }
 
-.alerts-panel .alert .icon {
+.notif-dropdown .alert .icon {
   margin-right: 6px;
 }
 
-.alerts-panel .alert .time {
+.notif-dropdown .alert .time {
   display: block;
   margin-top: 3px;
   color: var(--muted);

@@ -27,18 +27,26 @@ function tick() {
   }
 }
 
-// Seeds a deliberately "forgotten on" device at startup so the
-// after-hours alert has something to show immediately during a demo,
-// rather than relying on random chance during a live walkthrough.
-// Remove this call if you'd rather run fully random from t=0.
+// Seeds deliberately "forgotten on" devices at startup so the dashboard
+// always has at least one alert to show immediately during a demo,
+// rather than depending on random chance (or, for the after-hours check,
+// on what time of day the demo happens to run).
 function seedDemoState() {
-  const target = store.getDevice('work2-light-1');
-  if (!target) return;
+  // After-hours candidate — only actually fires as an alert outside 9-5.
+  const afterHoursTarget = store.getDevice('work2-light-1');
+  if (afterHoursTarget) {
+    store.setDeviceState('work2-light-1', true);
+    afterHoursTarget.lastChanged = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+  }
 
-  store.setDeviceState('work2-light-1', true);
-  // Backdate lastChanged so it immediately reads as "on for hours",
-  // which is what the after-hours / >2hr-continuous alert checks for.
-  target.lastChanged = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+  // A whole room left fully on — this one fires the "continuously on"
+  // critical alert regardless of time of day, so there's always
+  // something in the bell even during office hours.
+  const allOnRoom = store.getRoomDevices('work1');
+  for (const device of allOnRoom) {
+    store.setDeviceState(device.id, true);
+    device.lastChanged = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+  }
 }
 
 // intervalMs: how often the simulator ticks.

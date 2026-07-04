@@ -6,7 +6,15 @@ import { getAllDevices } from './simulator/deviceStore.js';
 
 const OFFICE_OPEN_HOUR = 9;
 const OFFICE_CLOSE_HOUR = 17;
-const CONTINUOUS_ON_THRESHOLD_MS = 2 * 60 * 60 * 1000;
+// Shortened from a "realistic" 2h so a live demo actually sees this alert
+// fire from the simulator's random toggling instead of only from the
+// seeded demo room.
+const CONTINUOUS_ON_THRESHOLD_MS = 10 * 60 * 1000;
+const CONTINUOUS_ON_THRESHOLD_LABEL = '10 minutes';
+// The simulator flips a few devices every few seconds — without a minimum
+// dwell time, an after-hours alert would flap in and out that fast. Only
+// flag a device once it's actually stayed on for a little while.
+const AFTER_HOURS_MIN_ON_MS = 60 * 1000;
 
 function isAfterHours(date) {
   const hour = date.getHours();
@@ -18,14 +26,25 @@ export function computeAlerts(now = new Date()) {
   const alerts = [];
 
   if (isAfterHours(now)) {
-    for (const device of devices) {
-      if (!device.status) continue;
+    const rooms = [...new Set(devices.map((d) => d.room))];
+    for (const room of rooms) {
+      const offenders = devices.filter(
+        (d) =>
+          d.room === room &&
+          d.status &&
+          now.getTime() - new Date(d.lastChanged).getTime() >= AFTER_HOURS_MIN_ON_MS
+      );
+      if (offenders.length === 0) continue;
+
       alerts.push({
-        id: `after-hours-${device.id}`,
+        id: `after-hours-${room}`,
         type: 'after-hours',
         severity: 'warning',
-        room: device.room,
-        message: `${device.name} in ${device.roomLabel} is still ON outside office hours (9AM-5PM).`,
+        room,
+        message:
+          offenders.length === 1
+            ? `${offenders[0].name} in ${offenders[0].roomLabel} is still ON outside office hours (9AM-5PM).`
+            : `${offenders.length} devices in ${offenders[0].roomLabel} are still ON outside office hours (9AM-5PM).`,
         timestamp: now.toISOString(),
       });
     }
@@ -49,7 +68,7 @@ export function computeAlerts(now = new Date()) {
         type: 'continuous-on',
         severity: 'critical',
         room,
-        message: `${roomDevices[0].roomLabel} has had all ${roomDevices.length} devices ON continuously for over 2 hours.`,
+        message: `${roomDevices[0].roomLabel} has had all ${roomDevices.length} devices ON continuously for over ${CONTINUOUS_ON_THRESHOLD_LABEL}.`,
         timestamp: now.toISOString(),
       });
     }

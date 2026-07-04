@@ -15,7 +15,7 @@ import { sampleEnergy, getEstimatedKwhToday } from './energyTracker.js';
 
 const PORT = process.env.PORT || 4000;
 const ENERGY_SAMPLE_MS = 5000;
-const ALERT_BROADCAST_MS = 5000;
+const ALERT_BROADCAST_MS = 8000;
 
 const app = express();
 app.use(cors());
