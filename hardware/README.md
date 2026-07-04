@@ -4,7 +4,15 @@ This is a **concept/simulation circuit only** — no real hardware is built or
 required for the hackathon deliverable. It shows how the office's fans and
 lights would realistically be wired and sensed by a microcontroller. Per the
 problem statement, this covers **one room** (Work Room 1: 2 fans + 3 lights)
-rather than all 18 devices; the same pattern repeats per room.
+rather than all 15 devices; the same pattern repeats per room.
+
+<p align="center">
+  <img src="../diagrams/circuit-diagram.jpeg" width="900" alt="Circuit schematic built in Tinkercad"><br>
+  <sub>Built circuit — ESP32, 5× relay modules, ACS712 current sensor, PC817 opto-isolator</sub>
+</p>
+
+Public, interactive circuit (open it, run the simulation, inspect every
+wire): [tinkercad.com/things/f2TzNStu8S2-circuitdiagram-iutaccessdenied](https://www.tinkercad.com/things/f2TzNStu8S2-circuitdiagram-iutaccessdenied?sharecode=eXU-W0rWGKZVqE3sbP60KwTWugR9m_Dr4NV5aAKc_yA)
 
 ⚠️ **Safety note:** Fans and room lights are mains-voltage (110/220V AC)
 loads. A microcontroller GPIO never switches mains directly — it drives a
@@ -123,8 +131,9 @@ substitutes low-voltage stand-ins:
 5. **Opto-isolator** — same approach: use the real part if the simulator
    has it, otherwise a simple switch + pull-up on `GPIO35` demonstrates the
    same "independent on/off sensing" concept.
-6. Take a screenshot of the finished simulation and save it into this
-   `hardware/` folder alongside this README for the submission.
+
+The finished simulation is built and shared publicly (screenshot and link
+at the top of this document) — the layout above is exactly what it follows.
 
 ## Minimal firmware sketch (concept)
 

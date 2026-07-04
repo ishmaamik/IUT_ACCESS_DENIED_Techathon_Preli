@@ -165,7 +165,61 @@ npm start
    proactively when an alert fires.
 6. Optional — set `GEMINI_API_KEY` in `bot/.env` for LLM-polished replies.
    Without it, the bot uses the template phrasing in `bot/formatters.js`;
-   both are built from the same real data.
+   both are built from the same real data. See [Gemini usage](#gemini-usage)
+   below for exactly what it's used for.
+
+## Environment variables
+
+Each service loads its own `.env` (copy it from that service's
+`.env.example`) — nothing is shared or read across services.
+
+**`backend/.env`**
+
+| Variable | Required | Default | Purpose |
+|---|---|---|---|
+| `PORT` | no | `4000` | HTTP + WebSocket port |
+| `MONGODB_URI` | no | unset | Enables persistence (device state, hourly kWh rollups, alert history). Unset, or unreachable, and the backend logs "running without persistence" and keeps working entirely in-memory |
+| `COST_PER_KWH` | no | `8.5` | Tariff used for the room report's cost estimate |
+| `CURRENCY` | no | `৳` | Currency symbol shown alongside cost figures |
+
+**`frontend/.env`**
+
+| Variable | Required | Default | Purpose |
+|---|---|---|---|
+| `VITE_API_URL` | no | `http://localhost:4000/api` | REST base URL (used by the room report modal) |
+| `VITE_WS_URL` | no | `ws://localhost:4000/ws` | WebSocket URL for live updates |
+
+**`bot/.env`**
+
+| Variable | Required | Default | Purpose |
+|---|---|---|---|
+| `DISCORD_TOKEN` | yes | — | Bot login token |
+| `API_BASE_URL` | no | `http://localhost:4000/api` | Backend REST base |
+| `BACKEND_WS_URL` | no | `ws://localhost:4000/ws` | Backend WebSocket — used only to relay `/api/announce` broadcasts as `@everyone` messages |
+| `ALERT_CHANNEL_ID` | no | unset | Channel the bot proactively posts alerts and announcements to; unset disables both |
+| `GEMINI_API_KEY` | no | unset | Enables the LLM features below; unset means template phrasing only |
+
+### Gemini usage
+
+Gemini (`gemini-2.5-flash`) is can be used for more interaction — every call
+has a 6-second timeout and a clean fallback, so a missing key or a slow/down
+API never blocks a reply. Three distinct uses, all in `bot/llm.js`:
+
+- **`humanize(facts)`** — rewrites `!status`, `!room`, `!usage`, and
+  `!report`'s already-correct fact string into one friendlier sentence. It's
+  instructed not to introduce numbers beyond what's given; the un-polished
+  `facts` string is the fallback if the call fails.
+- **`chat(question)`** — powers `!ask`, a general-purpose assistant *not*
+  grounded in office data. Returns `null` on failure, and the bot tells the
+  user Gemini isn't available rather than guessing.
+- **`askAboutReport(question, facts)`** — powers `!report <room> <question>`,
+  instructed to answer strictly from that room's report facts and to say so
+  honestly if the facts don't cover the question, instead of inventing one.
+
+Without `GEMINI_API_KEY`, every command still works and still reflects real
+simulated data — replies just skip the LLM rewrite and use the plain
+template phrasing from `bot/formatters.js`, and `!ask` / the grounded
+`!report` follow-up reply that Gemini isn't available.
 
 ## API reference
 
