@@ -329,6 +329,55 @@ body {
   position: relative;
 }
 
+/* Round on-screen joystick over the scene's bottom-left corner — drag
+   with mouse or thumb to move the character. touch-action: none keeps
+   the browser from hijacking the drag for scrolling/zooming. */
+.joystick {
+  position: absolute;
+  left: 22px;
+  bottom: 22px;
+  width: 120px;
+  height: 120px;
+  z-index: 10;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.joystick--active {
+  cursor: grabbing;
+}
+
+.joystick-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(20, 16, 10, 0.35);
+  border: 2px solid rgba(255, 243, 221, 0.35);
+  backdrop-filter: blur(2px);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.joystick--active .joystick-ring {
+  border-color: rgba(255, 215, 106, 0.75);
+  background: rgba(20, 16, 10, 0.5);
+}
+
+.joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3dd, #cdbb8c 70%);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  will-change: transform;
+}
+
 /* Transient toasts for newly-appeared alerts, stacked top-right over the
    scene — a "just happened" signal, separate from the bell's persistent
    list of what's currently active. */
