@@ -3,22 +3,8 @@
 *Techathon Preliminary — "Lights, Fans, Discord: The Boss's Big Idea"*
 
 A live 3D dashboard and Discord bot for monitoring an office's lights and
-fans. One Node.js backend simulates 15 devices across three rooms and acts
-as the single source of truth for both clients.
-
-## Contents
-
-- [Overview](#overview)
-- [System architecture](#system-architecture)
-- [Web dashboard](#web-dashboard)
-- [Discord bot](#discord-bot)
-- [Hardware / circuit design](#hardware--circuit-design)
-- [Repository layout](#repository-layout)
-- [Getting started](#getting-started)
-- [API reference](#api-reference)
-- [Discord bot commands](#discord-bot-commands)
-- [Alert rules](#alert-rules)
-- [Notes on the simulated data](#notes-on-the-simulated-data)
+fans. One Node.js backend simulates 15 devices across three rooms and is
+the single source of truth for both clients.
 
 ## Overview
 
@@ -28,14 +14,10 @@ as the single source of truth for both clients.
 | Work Room 1 | 2 fans, 3 lights |
 | Work Room 2 | 2 fans, 3 lights |
 
-15 devices total (2 fans + 3 lights × 3 rooms — this is the number that the
-problem statement's own math and office-layout diagram add up to).
-
-The simulator ticks every 5 seconds, randomly toggling devices so the
-dashboard and bot always have live, changing data to display. From that one
-state, the backend derives two things both clients consume: an energy
-estimate (kWh today) and rule-based alerts (after-hours usage, rooms left
-fully on for 10+ minutes).
+15 devices total. The simulator ticks every 5 seconds, randomly toggling
+devices so the dashboard and bot always have live, changing data — from
+which the backend derives an energy estimate (kWh today) and rule-based
+alerts (after-hours usage, rooms left fully on).
 
 ## System architecture
 
