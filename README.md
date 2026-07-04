@@ -1,3 +1,5 @@
+# This is the official readme for IUT technathon
+
 # Office Power Monitor
 
 **Lights, Fans, Discord: The Boss's Big Idea** — a live 3D dashboard and Discord
