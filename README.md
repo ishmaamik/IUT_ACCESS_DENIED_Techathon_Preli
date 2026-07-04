@@ -1,12 +1,24 @@
-# This is the official readme for IUT technathon
-
-# Office Power Monitor
+# TeslaOS
 
 *Techathon Preliminary — "Lights, Fans, Discord: The Boss's Big Idea"*
 
 A live 3D dashboard and Discord bot for monitoring an office's lights and
 fans. One Node.js backend simulates 15 devices across three rooms and acts
 as the single source of truth for both clients.
+
+## Contents
+
+- [Overview](#overview)
+- [System architecture](#system-architecture)
+- [Web dashboard](#web-dashboard)
+- [Discord bot](#discord-bot)
+- [Hardware / circuit design](#hardware--circuit-design)
+- [Repository layout](#repository-layout)
+- [Getting started](#getting-started)
+- [API reference](#api-reference)
+- [Discord bot commands](#discord-bot-commands)
+- [Alert rules](#alert-rules)
+- [Notes on the simulated data](#notes-on-the-simulated-data)
 
 ## Overview
 
@@ -16,25 +28,21 @@ as the single source of truth for both clients.
 | Work Room 1 | 2 fans, 3 lights |
 | Work Room 2 | 2 fans, 3 lights |
 
+15 devices total (2 fans + 3 lights × 3 rooms — this is the number that the
+problem statement's own math and office-layout diagram add up to).
+
 The simulator ticks every 5 seconds, randomly toggling devices so the
 dashboard and bot always have live, changing data to display. From that one
 state, the backend derives two things both clients consume: an energy
 estimate (kWh today) and rule-based alerts (after-hours usage, rooms left
 fully on for 10+ minutes).
 
-<p align="center">
-  <img src="diagrams/dashboard.png" width="720" alt="3D office dashboard"><br>
-  <sub>Web dashboard — live device state, power meter, alerts</sub>
-</p>
+## System architecture
 
 <p align="center">
-  <img src="docs/screenshots/discord-bot.png" width="480" alt="Discord bot in use"><br>
-  <sub>Discord bot — status query and a proactively posted alert</sub>
+  <img src="diagrams/system-diagram.jpeg" width="900" alt="System architecture diagram"><br>
+  <sub>Simulated device layer → backend (REST + WebSocket) → web dashboard &amp; Discord bot → people</sub>
 </p>
-
-## Architecture
-
-![System architecture](diagrams/system-diagram.jpeg)
 
 ```
 Device simulator → Backend (REST + WebSocket) → Web dashboard
@@ -59,6 +67,44 @@ Device simulator → Backend (REST + WebSocket) → Web dashboard
   as an `@everyone` message — the bot is a WebSocket client like the
   dashboard, not a separate integration.
 
+## Web dashboard
+
+<p align="center">
+  <img src="diagrams/dashboard.png" width="900" alt="3D office dashboard"><br>
+  <sub>Web dashboard — live 3D office, device state, power meter, alerts</sub>
+</p>
+
+`frontend/` — a React + react-three-fiber 3D office. Rooms, fans, and lights
+visually reflect live device state (fans spin, lights glow when ON), with a
+walkable avatar (keyboard, joystick, or mouse-click movement), a live power
+meter with per-room breakdown, and an alerts panel. Everything updates over
+the WebSocket connection — there is no polling and no page refresh.
+
+## Discord bot
+
+*(screenshot: add `diagrams/discord-bot.png` here once captured)*
+
+`bot/` — a discord.js bot that answers `!status`, `!room`, `!usage`, `!ask`,
+and `!help`, reading from the same backend as the dashboard so both
+interfaces always reflect the same reality. Optional Gemini integration
+humanizes replies and proactively posts to a designated channel when an
+alert fires.
+
+## Hardware / circuit design
+
+<p align="center">
+  <img src="diagrams/circuit-diagram.jpeg" width="900" alt="Circuit schematic in Tinkercad"><br>
+  <sub>Concept circuit (Work Room 1) — ESP32, relay modules, ACS712 current sensor, PC817 opto-isolator</sub>
+</p>
+
+Public, interactive circuit: [tinkercad.com/things/f2TzNStu8S2-circuitdiagram-iutaccessdenied](https://www.tinkercad.com/things/f2TzNStu8S2-circuitdiagram-iutaccessdenied?sharecode=eXU-W0rWGKZVqE3sbP60KwTWugR9m_Dr4NV5aAKc_yA)
+
+`hardware/README.md` covers the electrical design for one room in detail:
+ESP32 pin mapping, relay wiring for control, an ACS712 current sensor and a
+PC817 opto-isolator for independent on/off sensing, and the electrical
+reasoning behind each choice. It's a design/simulation reference — no
+physical hardware is required for this deliverable.
+
 ## Repository layout
 
 | Path | Contents |
@@ -66,7 +112,7 @@ Device simulator → Backend (REST + WebSocket) → Web dashboard
 | `backend/` | Express REST API + WebSocket server, device simulator, alerts engine, energy tracker |
 | `frontend/` | React + react-three-fiber 3D dashboard |
 | `bot/` | Discord bot (`!status`, `!room`, `!usage`, `!ask`), with optional LLM-polished replies |
-| `diagrams/` | System architecture diagram |
+| `diagrams/` | System architecture diagram, dashboard screenshot, circuit schematic |
 | `hardware/` | Circuit design — pin mapping, wiring, and simulator build notes for one room |
 
 ## Getting started
@@ -149,15 +195,9 @@ npm start
   been on for at least a minute (avoids flapping on the simulator's rapid
   toggling).
 - **Continuous-on** — every device in a room on at once, for 10+ minutes
-  straight.
-
-## Hardware design
-
-`hardware/README.md` covers the electrical design for one room: ESP32 pin
-mapping, relay wiring for control, an ACS712 current sensor and a PC817
-opto-isolator for independent on/off sensing, and notes on building the
-circuit in Wokwi or Tinkercad. It's a design reference — no physical
-hardware is required for this deliverable.
+  straight. (Shortened from a "realistic" 2 hours so the alert is actually
+  observable during a live demo, given the simulator's fast random
+  toggling — documented in `backend/alerts.js`.)
 
 ## Notes on the simulated data
 
